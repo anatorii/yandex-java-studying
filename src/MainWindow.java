@@ -13,8 +13,10 @@ public class MainWindow extends JFrame {
     private JPanel center;
     private JButton imageButton;
     private JButton wallButton;
+    private JButton triangleButton;
     private Image image = null;
     private Image wallImage = null;
+    private Image triangleImage = null;
 
     public MainWindow() {
         super("Загрузить картинку");
@@ -48,6 +50,17 @@ public class MainWindow extends JFrame {
             }
         });
 
+        triangleButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                try {
+                    triangleImageActionPerformed(e);
+                } catch (IOException ex) {
+                    throw new RuntimeException(ex);
+                }
+            }
+        });
+
         this.addWindowListener(new WindowAdapter() {
             @Override
             public void windowOpened(WindowEvent e) {
@@ -71,6 +84,11 @@ public class MainWindow extends JFrame {
     private void wallImageActionPerformed(ActionEvent e) throws IOException {
         loadWallImage();
         drawImage(wallImage);
+    }
+
+    private void triangleImageActionPerformed(ActionEvent e) throws IOException {
+        loadTriangleImage();
+        drawImage(triangleImage);
     }
 
     private void createUIComponents() {
@@ -99,6 +117,18 @@ public class MainWindow extends JFrame {
             String uri = "https://static-maps.yandex.ru/v1?ll=32.040043,54.781389&z=17&size=650,450" + "&apikey=" + apikey + pt;
             URL url = new URL(uri);
             wallImage = ImageIO.read(url);
+        }
+    }
+
+    public void loadTriangleImage() throws IOException {
+        String point = "&ll=-71,26";
+        String triangle = "-80.252770,25.793303" + ",-66.415017,18.288642" + ",-64.785838,32.294166" + ",-80.252770,25.793303";
+        String pl = "&pl=c:8822DDC0,f:00FF00A0,w:8," + triangle;
+        if (triangleImage == null) {
+            String apikey = App.dotenv.get("API_KEY");
+            String uri = "https://static-maps.yandex.ru/v1?z=5&size=650,450" + "&apikey=" + apikey + point + pl;
+            URL url = new URL(uri);
+            triangleImage = ImageIO.read(url);
         }
     }
 }
