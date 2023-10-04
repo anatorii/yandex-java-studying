@@ -17,6 +17,7 @@ public class MainWindow extends JFrame {
     private Image image = null;
     private Image wallImage = null;
     private Image triangleImage = null;
+    public Image curImage = null;
 
     public MainWindow() {
         super("Загрузить картинку");
@@ -65,10 +66,9 @@ public class MainWindow extends JFrame {
             @Override
             public void windowOpened(WindowEvent e) {
                 super.windowOpened(e);
-
                 try {
                     loadImage();
-                    drawImage(image);
+                    center.repaint();
                 } catch (IOException ex) {
                     throw new RuntimeException(ex);
                 }
@@ -78,27 +78,22 @@ public class MainWindow extends JFrame {
 
     private void imageActionPerformed(ActionEvent e) throws IOException {
         loadImage();
-        drawImage(image);
+        center.repaint();
     }
 
     private void wallImageActionPerformed(ActionEvent e) throws IOException {
         loadWallImage();
-        drawImage(wallImage);
+        center.repaint();
     }
 
     private void triangleImageActionPerformed(ActionEvent e) throws IOException {
         loadTriangleImage();
-        drawImage(triangleImage);
+        center.repaint();
     }
 
     private void createUIComponents() {
-        center = new CenterPanel(this);
+        center = new CenterPanel();
         center.setLayout(new BorderLayout());
-    }
-
-    public void drawImage(Image image) {
-        center.getGraphics().clearRect(0, 0, center.getSize().width, center.getSize().height);
-        center.getGraphics().drawImage(image, (center.getSize().width - 650) / 2, (center.getSize().height - 450) / 2, null);
     }
 
     public void loadImage() throws IOException {
@@ -108,38 +103,43 @@ public class MainWindow extends JFrame {
             URL url = new URL(uri);
             image = ImageIO.read(url);
         }
+        curImage = image;
     }
 
     public void loadWallImage() throws IOException {
-        String pt = "&pt=32.040048,54.781350,pm2dom1";
         if (wallImage == null) {
+            String pt = "&pt=32.040048,54.781350,pm2dom1";
             String apikey = App.dotenv.get("API_KEY");
             String uri = "https://static-maps.yandex.ru/v1?ll=32.040043,54.781389&z=17&size=650,450" + "&apikey=" + apikey + pt;
             URL url = new URL(uri);
             wallImage = ImageIO.read(url);
         }
+        curImage = wallImage;
     }
 
     public void loadTriangleImage() throws IOException {
-        String point = "&ll=-71,26";
-        String triangle = "-80.252770,25.793303" + ",-66.415017,18.288642" + ",-64.785838,32.294166" + ",-80.252770,25.793303";
-        String pl = "&pl=c:8822DDC0,f:00FF00A0,w:8," + triangle;
         if (triangleImage == null) {
+            String point = "&ll=-71,26";
+            String triangle = "-80.252770,25.793303" + ",-66.415017,18.288642" + ",-64.785838,32.294166" + ",-80.252770,25.793303";
+            String pl = "&pl=c:8822DDC0,f:00FF00A0,w:8," + triangle;
             String apikey = App.dotenv.get("API_KEY");
             String uri = "https://static-maps.yandex.ru/v1?z=5&size=650,450" + "&apikey=" + apikey + point + pl;
             URL url = new URL(uri);
             triangleImage = ImageIO.read(url);
         }
+        curImage = triangleImage;
     }
 }
 
 class CenterPanel extends JPanel {
-    private JFrame frame;
-    public CenterPanel(JFrame frame) {
-        this.frame = frame;
-    }
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
+
+        MainWindow frame = (MainWindow) SwingUtilities.getWindowAncestor(this);
+        if (frame.curImage != null) {
+            g.clearRect(0, 0, getSize().width, getSize().height);
+            g.drawImage(frame.curImage, (getSize().width - 650) / 2, (getSize().height - 450) / 2, null);
+        }
     }
 }
